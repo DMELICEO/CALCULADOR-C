@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Icono para Safari/iPhone -->
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" type="image/png" href="logo.png">
+
+    <title>Simulador de Crédito Profesional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blue-grad: linear-gradient(135deg, #1e40af, #3b82f6);
+            --green-grad: linear-gradient(135deg, #065f46, #10b981);
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .calculator-card {
+            background: var(--card);
+            width: 100%;
+            max-width: 950px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: 1fr;
+            overflow: hidden;
+        }
+
+        @media (min-width: 850px) {
+            .calculator-card { grid-template-columns: 1fr 1.1fr; }
+        }
+
+        /* Lado Izquierdo: Entradas */
+        .inputs-section { padding: 40px; border-right: 1px solid var(--border); }
+        h2 { font-size: 1.5rem; color: #0f172a; margin-bottom: 25px; letter-spacing: -0.5px; }
+        
+        .field { margin-bottom: 20px; }
+        label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 8px; }
+        
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper span { position: absolute; left: 16px; color: #94a3b8; font-weight: 500; }
+        
+        input {
+            width: 100%;
+            padding: 14px 16px 14px 32px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            background: #f1f5f9;
+        }
+
+        input:focus { outline: none; border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .no-symbol input { padding-left: 16px; }
+
+        /* Lado Derecho: Resultados */
+        .results-section { padding: 40px; background: #fcfdfe; display: flex; flex-direction: column; gap: 20px; }
+        
+        .main-results { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media (min-width: 500px) { .main-results { grid-template-columns: 1fr 1fr; } }
+
+        .res-card { padding: 25px; border-radius: 20px; color: white; transition: transform 0.2s; }
+        .res-card:hover { transform: translateY(-3px); }
+        .res-card.blue { background: var(--blue-grad); box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2); }
+        .res-card.green { background: var(--green-grad); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2); }
+        
+        .res-label { font-size: 0.8rem; font-weight: 500; opacity: 0.85; margin-bottom: 8px; }
+        .res-value { font-size: 1.6rem; font-weight: 700; }
+
+        /* Desglose y Botón */
+        .detail-btn {
+            background: #fff; border: 2px solid var(--border); padding: 12px; border-radius: 12px;
+            cursor: pointer; font-weight: 600; color: #475569; transition: all 0.2s; margin-top: 10px;
+        }
+        .detail-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+        #details { display: none; animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .table-box { background: #fff; border: 1px solid var(--border); border-radius: 12px; margin-top: 15px; overflow: hidden; }
+        .row { display: flex; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .row:last-child { border-bottom: none; }
+        .row span:first-child { color: #64748b; font-weight: 500; }
+        .row span:last-child { font-weight: 700; color: #1e293b; }
+        .neg { color: #e11d48 !important; }
+    </style>
+</head>
+<body>
+
+<div class="calculator-card">
+    <section class="inputs-section">
+        <h2>Simulador de Crédito</h2>
+        
+        <div class="field">
+            <label>Monto del Préstamo</label>
+            <div class="input-wrapper">
+                <span>$</span>
+                <input type="text" id="monto" placeholder="0.00" oninput="formatearYCalcular(this)">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="field no-symbol">
+                <label>Plazo (Años)</label>
+                <input type="number" id="plazo" placeholder="Ej. 2" oninput="calcular()">
+            </div>
+            <div class="field no-symbol">
+                <label>Interés Anual (%)</label>
+                <input type="number" id="interes" value="15" oninput="calcular()">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="field no-symbol">
+                <label>Personas Buró</label>
+                <input type="number" id="personas" value="2" oninput="calcular()">
+            </div>
+            <div class="field">
+                <label>Acta Notarial</label>
+                <div class="input-wrapper">
+                    <span>$</span>
+                    <input type="text" id="acta" value="79.10" oninput="formatearYCalcular(this)">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="results-section">
+        <div class="main-results">
+            <div class="res-card blue">
+                <p class="res-label">Cuota Mensual</p>
+                <p class="res-value" id="valCuota">$0.00</p>
+            </div>
+            <div class="res-card green">
+                <p class="res-label">Neto a Recibir</p>
+                <p class="res-value" id="valNeto">$0.00</p>
+            </div>
+        </div>
+
+        <button class="detail-btn" onclick="toggleDetails()" id="btnText">Ver desglose detallado ▼</button>
+
+        <div id="details">
+            <div class="table-box">
+                <div class="row"><span>Cuota sin Seguro</span><span id="dCuotaBase">$0.00</span></div>
+                <div class="row"><span>Seguro de Deuda</span><span id="dSeguro">$0.00</span></div>
+                <div class="row"><span>Plazo Total</span><span id="dMeses">0 meses</span></div>
+            </div>
+
+            <div class="table-box">
+                <div class="row"><span>Derecho Estudio + IVA</span><span id="dDerecho">$0.00</span></div>
+                <div class="row"><span>Gasto Buró</span><span id="dBuro">$0.00</span></div>
+                <div class="row"><span>Acciones (1.5%)</span><span id="dAcciones">$0.00</span></div>
+                <div class="row" style="background: #fff1f2;">
+                    <span style="color: #be123c;">Total Deducciones</span>
+                    <span id="dTotalGastos" class="neg">$0.00</span>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Función para manejar el formato de moneda en el input y disparar cálculo
+    function formatearYCalcular(input) {
+        let value = input.value.replace(/[^0-9.]/g, '');
+        if (value) {
+            let partes = value.split('.');
+            partes[0] = parseInt(partes[0]).toLocaleString('en-US');
+            input.value = partes.length > 1 ? partes[0] + '.' + partes[1].slice(0, 2) : partes[0];
+        }
+        calcular();
+    }
+
+    function toggleDetails() {
+        const d = document.getElementById('details');
+        const b = document.getElementById('btnText');
+        const isOpen = d.style.display === 'block';
+        d.style.display = isOpen ? 'none' : 'block';
+        b.innerText = isOpen ? 'Ver desglose detallado ▼' : 'Ocultar detalles ▲';
+    }
+
+    function parseNum(id) {
+        let val = document.getElementById(id).value.replace(/,/g, '');
+        return parseFloat(val) || 0;
+    }
+
+    function fmt(num) {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+    }
+
+    function calcular() {
+        const monto = parseNum('monto');
+        const plazoAnios = parseNum('plazo');
+        const interesAnual = parseNum('interes');
+        const personas = parseNum('personas');
+        const acta = parseNum('acta');
+        
+        if (monto <= 0 || plazoAnios <= 0) {
+            actualizarUI(0, 0, 0, 0, 0, 0, 0, 0, 0);
+            return;
+        }
+
+        // Cálculos
+        const meses = plazoAnios * 12;
+        const r = (interesAnual / 100) / 12;
+        
+        // Cuota Base (PMT)
+        let cuotaBase = r > 0 ? (monto * r * Math.pow(1+r, meses)) / (Math.pow(1+r, meses) - 1) : monto / meses;
+        const seguro = monto * 0.001;
+        const cuotaFinal = cuotaBase + seguro;
+
+        // Deducciones
+        const derecho = (monto * 0.01) + 13;
+        const buro = (personas * 1.75) + 0.455;
+        const acciones = monto * 0.015;
+        const totalDeducciones = acta + derecho + buro + acciones;
+        const netoRecibir = monto - totalDeducciones;
+
+        actualizarUI(cuotaFinal, netoRecibir, cuotaBase, seguro, meses, derecho, buro, acciones, totalDeducciones);
+    }
+
+    function actualizarUI(cf, nr, cb, seg, m, der, bur, acc, td) {
+        document.getElementById('valCuota').innerText = fmt(cf);
+        document.getElementById('valNeto').innerText = fmt(nr);
+        document.getElementById('dCuotaBase').innerText = fmt(cb);
+        document.getElementById('dSeguro').innerText = fmt(seg);
+        document.getElementById('dMeses').innerText = m + " meses";
+        document.getElementById('dDerecho').innerText = fmt(der);
+        document.getElementById('dBuro').innerText = fmt(bur);
+        document.getElementById('dAcciones').innerText = fmt(acc);
+        document.getElementById('dTotalGastos').innerText = "-" + fmt(td);
+    }
+</script>
+
+</body>
+</html>
